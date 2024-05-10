@@ -1,0 +1,61 @@
+﻿@model DotNetCourse.Models.UserModel
+
+    @if (TempData["EditProfileSuccessMsg"] != null )
+    {
+        <div class="alert alert-success" role="alert">
+        @TempData["EditProfileSuccessMsg"]
+        </div>
+    }
+@if (Context.Session.GetString("UserId") == null)
+{
+    <script>
+        window.location.href = '@Url.Action("Index", "Blog")';
+    </script>
+}
+
+
+
+<div class="container mt-5 col-md-6" style="border: 2px solid #ced4da; border-radius: 10px; padding: 20px;">
+    <h2 style="text-align: center; color: #ced4da;">Edit Profile</h2>
+    <form method="post" action="/user/editprofile" onsubmit="return validatePasswords()">
+        <div class="form-group">
+            <label for="Username" style="color: #ced4da;">Username:</label>
+            <input type="text" class="form-control" id="Username" name="Username" value="@Model.Username" required />
+            <input type="hidden" class="form-control" id="Username" name="Username" value="@Model.Id" required />
+        </div>
+        <div class="form-group">
+            <label for="Email" style="color: #ced4da;">Email:</label>
+            <input type="email" class="form-control" id="Email" name="Email" value="@Model.Email" required />
+        </div>
+        <div class="form-group">
+            <label for="Password" style="color: #ced4da;">New Password:</label>
+            <input type="password" class="form-control" id="Password" name="Password" />
+        </div>
+        <div class="form-group">
+            <label for="ConfirmPassword" style="color: #ced4da;">Confirm Password:</label>
+            <input type="password" class="form-control" id="ConfirmPassword" name="ConfirmPassword" />
+            <div id="passwordMismatchError" class="text-danger" style="display: none;">Password and confirm password must match.</div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="background-color: #343a40;width:100%">Update Profile</button>
+    </form>
+</div>
+
+
+
+    <!-- Bootstrap JS -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        function validatePasswords() {
+            var password = document.getElementById("Password").value;
+            var confirmPassword = document.getElementById("ConfirmPassword").value;
+
+            if (password !== confirmPassword) {
+                document.getElementById("passwordMismatchError").style.display = "block";
+                return false; // Prevent form submission
+            }
+
+            return true; // Allow form submission
+        }
+    </script>
+

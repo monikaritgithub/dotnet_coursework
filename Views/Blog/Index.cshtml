@@ -1,0 +1,429 @@
+﻿@model IEnumerable<DotNetCourse.Models.BlogMetaData>
+
+@{
+    string sortOrder = ViewData["SortOrder"]?.ToString();
+}
+
+@{
+    // Retrieve session data
+    var userId = Context.Session.GetString("UserId");
+    var username = Context.Session.GetString("Username");
+    var userRole = Context.Session.GetString("UserRole");
+}
+
+@if (TempData["LoginSuccessMessage"] != null)
+{
+    <div class="alert alert-success" role="alert">
+        @TempData["LoginSuccessMessage"]
+    </div>
+}
+<select class="custom-select text-white" onchange="location = this.value;" style = "width:150px;margin:20px  0 20px 150px;background-color:#3d3d3d;margin-left:auto; ">
+    <option value="@Url.Action("Index", new { sortOrder = "random" })" @(sortOrder == "random" ? "selected" : "")>Sort by Default</option>
+    <option value="@Url.Action("Index", new { sortOrder = "popularity" })" @(sortOrder == "popularity" ? "selected" : "")>Sort by Popularity</option>
+    <option value="@Url.Action("Index", new { sortOrder = "date" })" @(sortOrder == "date" ? "selected" : "")>Sort by Recent Date</option>
+</select>
+
+
+
+
+
+
+<div class="container d-flex justify-content-center align-items-center " style="width:95%;background-color:#3d3d3d;padding:10px;">
+    <div class="row" style="width:100%">
+        @foreach (var post in Model)
+        {
+            <div class=" mb-4" style="width:100%;background-color:#4d4d4d">
+                <div class="card" style="height: auto;background-color:#4d4d4d">
+                    <h4 class="ml-4"> Author: @post.Blog.CreatedBy</h4>
+                    <div class="ml-4" style="font-size:12px">
+                        Uploaded on
+                    <small class="ml-2" style="font-size:10px">  @post.Blog.CreatedAt</small>
+                    @if(post.Blog.LastUpdatedAt != null){
+                       <small class="ml-4">
+                            Last Activity on
+                       </small>
+                            <small class="ml-2" style="font-size:10px">  @post.Blog.LastUpdatedAt</small>
+                    }
+                    </div>
+                    <h3 class="card-title mx-4" style = "margin:20px">@post.Blog.Title</h3>
+                    <div class="card-img-top mx-auto my-6" style="background-color: #f8f9fa; border-radius: 4px; padding:10px 0;display:flex;justify-content:center">
+                        <img src="@post.Blog.ImagePath" class="card-img-top mx-auto my-12" alt="Blog Post Image" style="height:300px;width:auto;" />
+                    </div>
+                    <div class="card-body" style="overflow: hidden;">
+                        <p class="card-text" style="overflow: hidden; text-overflow: ellipsis;">@post.Blog.Description</p>
+                        <div class="d-flex justify-content-between align-items-center mb-4" style = "font-size:18px;font-weight:500;">
+
+                           
+                                <div style = "margin-right:10px;display:flex; align-items:center;">
+
+                                <i class="fa fa-arrow-up like-btn" style="margin:0 0px;cursor:pointer;font-size:20px;" data-post-id="@post.Blog.Id"></i>
+                                <div style="margin:0 15px 0 5px;" id="like-@post.Blog.Id">
+                                    @post.Like
+                                </div>
+
+                                <i class="fa fa-arrow-down dislike-btn" data-post-id="@post.Blog.Id" style = "cursor:pointer;" ></i>
+                                </div>
+
+                            <div onclick="ToggleComments(@post.Blog.Id)"style="cursor:pointer;"> <i class="fa fa-comment" data-post-id="@post.Blog.Id"></i> @post.CommentsCount comments</div>
+               
+                            
+
+                        </div>
+                        <div class="card-footer" id="comments-@post.Blog.Id" data-post-id ="@post.Blog.Id">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+            <div class="pagination">
+                @if (ViewBag.CurrentPage > 1)
+                {
+                    <a href="@Url.Action("Index", new { sortOrder = ViewBag.SortOrder, page = ViewBag.CurrentPage - 1 })" class = 'mr-4 btn btn-secondary'>Previous</a>
+                }
+
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    <a href="@Url.Action("Index", new { sortOrder = ViewBag.SortOrder, page = i })" @(i == ViewBag.CurrentPage ? "class=current-page" : "") class=" btn btn-primary " style="margin:0 10px 0 0;color:black;font-size:16px;background-color:white;width:30px;text-align:center;border-radius:4px;">@i</a>
+                }
+
+                @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                {
+                    <a href="@Url.Action("Index", new { sortOrder = ViewBag.SortOrder, page = ViewBag.CurrentPage + 1 })"class = 'mr-2'>Next</a>
+                }
+            </div>
+    </div>
+</div>
+
+
+
+
+
+<script>
+    
+$(document).ready(function() {
+    $('.like-btn').click(function() {
+        handleRank($(this).data('post-id'), 'like','blog');
+    });
+
+    $('.dislike-btn').click(function() {
+        console.log("hello")
+        handleRank($(this).data('post-id'), 'dislike','blog');
+    }); 
+    
+    $('.like1').click(function() {
+        handleRank($(this).data('post-id'), 'like','comment');
+    });
+
+    $('#dislike1').click(function() {
+        console.log("hello")
+        handleRank($(this).data('post-id'), 'dislike','comment');
+    });
+
+    
+       
+});
+    function handleRank(postId, action, type) {
+        if (!"@username") return alert("Please login to continue");
+        console.log($(this))
+        $(this).css("background-color", "blue");
+        if(action == "like") $('#like1'+postId).css("color","blue");
+        if (action == "dislike") $('#dislike1' + postId).css("color", "blue");
+                
+
+
+        
+        $.ajax({
+            type: 'POST',
+            url: '/Blog/ModifyRankCount',
+            data: { postId: postId, action: action, type: type },
+            success: function (response) {
+                console.log(response)
+                if(type != "comment")
+                {
+                $('#like-' + postId).text(response.newLike);
+                $('#like-' + postId).css("color","blue");
+                $('#dislike-' + postId).text(response.newDislike);
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: '/Blog/CreateAlert',
+                    data: {
+                        blogPostId: postId,
+                        message: `${"@username"} reacted to your ${type}`
+                    },
+                    success: function (response) {
+
+                        console.log("Alert Created successfully.");
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error creating notification:", error);
+                    }
+                });
+
+            },
+            error: function (xhr, status, error) {
+                console.error(error);
+            }
+        });
+    }
+    
+    function ToggleComments(id) {
+       
+        
+        var commentsContainer = $('#comments-' + id);
+        var commentTextarea = $('#commentTextarea-' + id);
+
+        if (commentsContainer.children().length > 0) {
+            commentsContainer.children().toggle();
+            commentTextarea.toggle();
+            return;
+        }
+
+        $("#comments-" + id).show();
+
+        var textarea = $("<textarea></textarea>", {
+            id: "commentTextarea"+id,
+            name: "commentText",
+            rows: "4",
+            cols: "50",
+            placeholder: "Write your comment here...",
+            class: "form-control" // Add Bootstrap class for styling
+        });
+        
+
+        // Append the textarea to a container element
+        $("#comments-"+id).append(textarea);
+        var button = $("<button></button>", {
+            id: "commentButton",
+            text: "Add Comment",
+            class: "btn btn-primary mt-2",
+            onclick: `addComment(${id}, $('#commentTextarea${id}').val())`
+        });
+
+        commentsContainer.append(button);
+        
+        $.ajax({
+            type: 'GET',
+            url: '/Blog/BlogComments?blogid='+id,
+            
+            success: function (response) {
+                console.log(response)
+                response.comments.forEach((comment, index) => {
+                    var dateTime = new Date(comment.lastModifiedDate);
+                    var CreatedDate = new Date(comment.createdDate);
+
+                    // Format the date and time
+                    var options = {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: 'numeric',
+                        second: 'numeric',
+                        hour12: true
+                    };
+                   
+                    if (comment.lastModifiedDate) {
+                        var formattedDateTime =  "Edited at " + dateTime.toLocaleString('en-US', options);
+                    } else {
+                        var formattedDateTime = CreatedDate.toLocaleDateString('en-US', options);
+                    }
+                    let variable = 0;
+                    console.log("@username","donbange")
+                    commentsContainer.append(`
+        <div style="margin:10px">
+            <p style="font-size:20px;font-weight:bold;margin-bottom:0;">${comment.createdBy}</p>
+            ${comment.text}
+            <small>
+            ${formattedDateTime}</small>` +
+                        `${('@username' === comment.createdBy) ?
+                            `<button onclick="editComment(${comment.id})"class = "btn-info btn text-white rounded mx-2">Edit</button><button class = "btn-danger btn rounded text-white" onclick="deleteComment(${comment.id})">Delete</button>` : ''}
+    </div>
+        `
+                    );
+
+                })
+            },
+            error: function (xhr, status, error) {
+                console.error(error);
+            }
+        });
+    }
+    
+    function addComment(postId, commentText, CreatedBy="") {
+        if (!"@username") return alert("Please login to comment");
+        $.ajax({
+            type: 'POST',
+            url: '/Blog/PostComment',
+            data: {
+                postId: postId,
+                commentText: commentText,
+                CreatedBy: CreatedBy
+            },
+            success: function (response) {
+                // Handle success response
+                var CreatedDate = new Date(response.createdDate);
+
+                // Format the date and time
+                var options = {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: 'numeric',
+                    second: 'numeric',
+                    hour12: true
+                };
+
+              
+                    var formattedDateTime = CreatedDate.toLocaleDateString('en-US', options);
+               
+                $("#commentTextarea" + postId).val("");
+                $('#comments-' + postId).append(`
+                         <div style="margin:10px">
+            <p style="font-size:20px;font-weight:bold;margin-bottom:0;">@username</p>
+            ${response.message}
+            <small>
+            ${formattedDateTime}</small>` +
+                        `${(true) ?
+                            `<button onclick="editComment(${response.id})"class = "btn-info text-white rounded mx-2 btn">Edit</button><button class = "btn-danger btn rounded text-white" onclick="deleteComment(${response.id})">Delete</button>` : ''}
+    </div>
+       
+                `)
+                $.ajax({
+                    type: 'POST',
+                    url: '/Blog/CreateAlert', // Update the URL to match your endpoint
+                    data: {
+                        blogPostId: postId,
+                        message: `${"@username"} commented on your post` // You can customize the notification message here
+                    },
+                    success: function (response) {
+                        console.log("Alert Created successfully.");
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error creating notification:", error);
+                    }
+                });
+              
+            },
+            error: function (xhr, status, error) {
+                // Handle error response
+                console.error(error);
+            }
+        });
+    }
+
+    function editComment(commentId) {
+        // Get the comment text
+        var commentText = $('#commentText-' + commentId).text();
+
+        // Prompt the user to enter the edited comment text
+        var editedText = prompt("Edit comment:", commentText);
+
+        if (editedText !== null) {
+            // Update the comment text in the UI
+            $('#commentText-' + commentId).text(editedText);
+
+            // Send the updated comment text to the server for updating in the database
+            $.ajax({
+                type: 'POST',
+                url: '/Blog/EditComment',
+                data: { commentId: commentId, editedText: editedText },
+                success: function (response) {
+                    location.reload();
+                },
+                error: function (xhr, status, error) {
+                    // Handle error response
+                    console.error(error);
+                }
+            });
+        }
+    }
+    function deleteComment(commentId) {
+        // Send an HTTP DELETE request to the server to delete the comment
+        if (!confirm("Are you sure want to delete?")) return;
+        console.log("hey",commentId)
+        fetch(`/blog/deletecomment?commentId=${commentId}`, {
+            
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to delete comment');
+                }
+                // Optional: Update the UI or perform any other actions upon successful deletion
+                console.log('Comment deleted successfully');
+                // Optional: Reload the page or update the comment list after deletion
+                location.reload(); // Reload the page
+            })
+            .catch(error => {
+                console.error('Error deleting comment:', error);
+            });
+    }
+    $(document).ready(function () {
+        $("#notificationIcon").click(function () {
+            $("#notificationList").toggle();
+            $.ajax({
+                url: '/blog/GetUnreadAlertForUser?noread=false', // Update the URL to match your endpoint
+                type: 'GET',
+                success: function (response) {
+                    // Clear previous notifications
+                    console.log(response)
+                    $("#notificationList").empty();
+
+                    // Populate the notification list with fetched notifications
+                    response.forEach(function (notification) {
+                        console.log(notification.message)
+                        if(notification.isRead)
+                            $("#notificationList").append('<li style = "font-size:14px;line-height:1.2;margin-bottom:8px;background-color:#2d2d2d">' + notification.message + ' on blog '+ notification.blogTitle+ '</li>');
+                        else
+                            $("#notificationList").append('<li style = "font-size:14px;line-height:1.2;margin-bottom:8px;font-weight:bold;">' + notification.message + '</li>');
+
+                    });
+
+                },
+                error: function (xhr, status, error) {
+                    console.error(error);
+                }
+            });
+
+        });
+        $.ajax({
+            url: '/blog/GetUnreadAlertForUser?noread=true', // Update the URL to match your endpoint
+            type: 'GET',
+            success: function (response) {
+                // Clear previous notifications
+                console.log(response)
+                $("#notificationList").empty();
+                let count = 0;
+
+                // Populate the notification list with fetched notifications
+                response.forEach(function (notification) {
+                    console.log(notification.message)
+                    if (!notification.isRead) {
+                        count++;
+                        console.log("shankar")
+                    }
+
+
+                });
+                let appendingContent = `<div class = 'bg-danger rounded-circle pl-1' style = 'width:20px;color:white'>${count}<div>`
+                $("#notificationCount").append(appendingContent);
+                console.log($("#notificationCkjhount").length);
+                console.log(count, "hello");
+
+                },
+                error: function (xhr, status, error) {
+                    console.error(error);
+                }
+            });
+    })
+
+   
+   
+    
+
+</script>
+
+
+

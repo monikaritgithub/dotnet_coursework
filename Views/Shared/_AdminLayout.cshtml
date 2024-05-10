@@ -1,0 +1,85 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <!-- Your head content here -->
+    <title>@ViewData["Title"] DotNet Course Work</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdn.jsdelivr.net/npm/@@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <style>
+        body {
+            background: #2d2d2d;
+            color: white;
+            font-weight: 600;
+        }
+
+        #sidebar {
+            transition: all 0.3s;
+        }
+
+            #sidebar.active {
+                margin-left: -200px; /* Adjust this value as needed */
+            }
+
+        #sidebarCollapse {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="container-fluid" style="margin-top: 30px;">
+        <div class="row" style="margin-top: 10px;">
+            <nav id="sidebar" class="col-md-2 d-none d-md-block sidebar bg-dark">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column pt-6">
+                        <li class="nav-item text-white">
+                            <a class="nav-link active" href="#" style="color:white;font-size:18px;">
+                                <i class="fa fa-dashboard"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="user/signup" style="color:white;font-size:18px;">
+                                <i class="fa fa-user-plus"></i> Create User
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/user/logout" style="color:white;font-size:18px;">
+                                <i class="fa fa-sign-out"></i> Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Button to toggle the sidebar -->
+            <button class="btn btn-dark d-md-none" id="sidebarCollapse">
+                <i class="fa fa-bars"></i>
+            </button>
+
+            <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            $('#sidebarCollapse').on('click', function () {
+                $('#sidebar').toggleClass('active');
+            });
+        });
+    </script>
+</body>
+</html>

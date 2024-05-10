@@ -1,0 +1,156 @@
+@{
+    // Check if session data exists
+    var userId = Context.Session.GetString("UserId");
+    var username = Context.Session.GetString("Username");
+    var userRole = Context.Session.GetString("UserRole");
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>@ViewData["Title"] Dotnet App</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <!-- Bootstrap JS -->
+    @* <script src="~/js/signalr/dist/browser/signalr.js"></script> *@
+    @* <script src="~/js/chat.js"></script> *@
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    @* <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.12/signalr.min.js"></script> *@
+    <script src="https://unpkg.com/@@aspnet/signalr@@1.0.0-rc1-final/dist/browser/signalr.js"></script>
+
+    <style>
+        /* Custom styles */
+        body{
+            background-color:#1d1d1d;
+            color:white;
+            font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+        /* Custom CSS for side navigation */
+        .navbar-collapse {
+            position: fixed;
+            top: 0;
+            left: -250px; /* Hide the navbar initially */
+            width: 250px;
+            height: 100%;
+            background-color: #333; /* Dark background color */
+            transition: left 0.3s ease; /* Smooth transition effect */
+        }
+
+            .navbar-collapse.show {
+                left: 0; /* Show the navbar when toggler is clicked */
+            }
+
+        .navbar-toggler {
+            z-index: 1; /* Ensure the toggler button is above the navbar */
+        }
+
+        .navbar-nav {
+            width: 100%; /* Make the navbar occupy the full width */
+        }
+
+            .navbar-nav .nav-item {
+                width: 100%; /* Make each nav item occupy the full width */
+                text-align: center; /* Center align the nav items */
+                border-bottom: 1px solid #555; /* Add border between nav items */
+            }
+
+                .navbar-nav .nav-item:last-child {
+                    border-bottom: none; /* Remove border from last nav item */
+                }
+
+                  @@media (min-width: 992px) {
+            .navbar-expand-lg .navbar-toggler {
+                display: inline;
+                margin-left:auto;
+            }
+            }
+
+        .dropdown-item:hover {
+            color: black !important;
+        }
+
+       
+
+    </style>
+</head>
+<body>
+    <script>
+        $(document).ready(function () {
+            if ("@userRole" == "Admin" && !window.location.href.endsWith("/blog"))
+                $(".navbar").css("display", "none");
+        });
+    </script>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark"style="height:80px;">
+        <a class="navbar-brand" href="/blog">Dotnet App</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent" style="z-index:2000;display:flex;flex-direction:column;">
+            <div class=" text-white" style="font-size:25px;margin-top:50px;">
+
+                    <a class="nav-link text-white" href="/blog"> <i class="fa fa-home text-white" aria-hidden="true"></i>Home</a>
+            </div>
+           
+               
+       
+
+            @if (!string.IsNullOrEmpty(userId))
+            {
+                <!-- Alert list -->
+                <div class="notification " style="position:relative;margin:10px 50px 10px 0" id="notification">
+                    <div id="notificationCount" style="position:absolute;left:30px;"></div>
+                    <div id="notificationList" class="list-group mt-3" style="position:absolute;right:-150px;top:30px;display:none; background:#2d2d2d;height:300px;overflow-y:scroll;width:200px;z-index:100"></div>
+                    <button id="notificationIcon" class="btn btn-secondary" style="margin-right:20px;top: 10px;">
+                        <i class="fa fa-bell"></i>
+                    </button>
+                </div>
+            }
+
+            <!-- Profile menu -->
+            @if (!string.IsNullOrEmpty(userId))
+            {
+                <div class="text-white" style = "font-size:18px;">
+                   
+                            
+                                <a class="dropdown-item" href="/user/editprofile"style="color:white;">@username</a>
+                                <a class="dropdown-item" href="/user/editprofile"style = "color:white;">My Profile</a>
+                                <a class="dropdown-item" href="/blog/manageblogs" id="manageBlogs"style ="color:white;" >My Blogs</a>
+                                <a class="dropdown-item text-danger" href="/user/deleteprofile">Delete Account</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="/user/logout"style ="color:white;" >Logout</a>
+                            
+                       
+                </div>
+            }
+            else
+            {
+                <div style="width:80%;margin:30px 0px 20px 0;" >
+                    
+                        <a class="nav-link btn btn-primary text-white" href="/User/Login">Login</a>
+                   
+                </div>
+                <div style = "width:100%">
+                   
+                        <a class="nav-link btn text-white bg-info mx-4" href="/user/signup">Signup</a>
+
+                    </div>
+            }
+        </div>
+    </nav>
+
+
+    <div class="content">
+        @RenderBody() <!-- This will render the content of other views within the layout -->
+    </div>
+
+    @RenderSection("Scripts", required: false)
+
+</body>
+</html>
